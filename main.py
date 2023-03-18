@@ -7,6 +7,12 @@ import tempfile
 from yt_dlp import YoutubeDL
 from shutil import which, rmtree
 
+SUPPORTED_IMAGES = [
+    "png",
+    "jpg",
+    "jpeg"
+]
+
 SUPPORTED_EXTENSION = [
     "mp3",
     "m4a"
@@ -38,9 +44,8 @@ def main():
     args = parser.parse_args()
 
     # Verify arguments
-    if args.art and (not os.path.isfile(args.art) or not args.art.lower().endswith(
-            ('.png', '.jpg', '.jpeg'))):
-        print("Art file is not a valid image file")
+    if args.art and (not os.path.isfile(args.art) or os.path.splitext(args.art.lower())[1][1:] not in SUPPORTED_IMAGES):
+        print("Art file is not a valid image file (png or jpeg)")
         return
 
     if not os.path.isdir(args.destination):
@@ -62,28 +67,21 @@ def main():
     songs = get_songs(song_location)
 
     # Step 2 - Parse song names
-    parsed_names = []
-    for song in songs:
-        # Remove extension
-        name = os.path.splitext(song)[0]
-        for reg in args.remove:
-            name = re.sub(rf"{reg}", "", name)
-            name = name.strip()  # Sorta fixes broken regex
-        parsed_names.append(name)
+    parsed_names = [re.sub(rf"{reg}", "", os.path.splitext(song)[0]).strip() for reg in args.remove for song in songs]
 
     # Step 3 - FFMPEG to destination
     for i in range(len(songs)):
-        song_file = os.path.join(song_location, songs[i])
+        source_file = os.path.join(song_location, songs[i])
         name = parsed_names[i]
         title = args.name
-        out_file_name = f"{name} - {title} OST." + extension
+        out_file_name = f"{name} - {title} OST.{extension}"
         destination_file = os.path.join(args.destination, out_file_name)
 
         # Start FFMPEG
         command = ["ffmpeg", "-y"]
         if args.art is not None:
             command += ["-i", args.art]
-        command += ["-i", song_file]
+        command += ["-i", source_file]
         command += ["-map", "0:0"]
         if args.art is not None:
             command += ["-map", "1:0"]
@@ -92,11 +90,11 @@ def main():
         command += ["-metadata", f"album={title}"]
         command += ["-metadata", f"artist={title}"]
         command.append(destination_file)
-        subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # Do not print to console
         print("Wrote:", out_file_name)
 
     # Exit
-    subprocess.Popen(rf'explorer "{args.destination}"')
+    subprocess.Popen(rf'explorer "{args.destination}"')  # Open folder when done
     clean_exit(song_location)
 
 
@@ -114,7 +112,7 @@ def download_playlist(playlist: str, extension: str) -> str:
     temp_folder = tempfile.mkdtemp(prefix="upf-")
     output_template = os.path.join(temp_folder, "%(title)s.%(ext)s")
     ydl_opts = {
-        'format': 'mp3/bestaudio/best',
+        'format': 'bestaudio',  # Format here shouldn't matter since we'll be using ffmpeg to convert
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': extension,
@@ -125,7 +123,7 @@ def download_playlist(playlist: str, extension: str) -> str:
     with YoutubeDL(ydl_opts) as ydl:
         ydl.download(playlist)
 
-    print("Download complete")
+    print("YouTube Download complete")
     return temp_folder
 
 
@@ -140,12 +138,6 @@ class CleanLogger:
     def debug(self, msg):
         if msg.startswith("[download] Downloading item"):
             print(msg)
-
-    def info(self, msg):
-        pass
-
-    def warning(self, msg):
-        pass
 
     def error(self, msg):
         print(msg)
