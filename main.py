@@ -66,6 +66,10 @@ def main():
         return clean_exit(song_location)
     songs = get_songs(song_location)
 
+    if len(songs) == 0:
+        print("No songs were found!")
+        clean_exit(song_location)
+
     # Step 2 - Parse song names
     parsed_names = [re.sub(rf"{reg}", "", os.path.splitext(song)[0]).strip() for reg in args.remove for song in songs]
 
