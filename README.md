@@ -1,5 +1,9 @@
 # Ultimate Playlist Formatter
-A command line application for downloading & formatting mp3 playlists.
+I've rebuilt this app in so many  languages I decided to just make it an actual complete thing instead of a personal project.
+
+UltimatePlaylistFormatter is a command line application for creating and formatting mp3 playlists. It supports local mp3 playlists and downloading from youtube using `yt-dlp`.
+
+### The program requires `ffmpeg` to be installed (make sure to install the full build that includes `ffprobe`).
 
 # Usage
 See the [Options](#Options) table to see all the flags
