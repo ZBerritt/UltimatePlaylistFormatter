@@ -70,8 +70,10 @@ def main():
         print("No songs were found!")
         clean_exit(song_location)
 
-    # Step 2 - Parse song names
-    parsed_names = [re.sub(rf"{reg}", "", os.path.splitext(song)[0]).strip() for reg in args.remove for song in songs]
+    # Step 2 - Parse song names'
+    parsed_names = [os.path.splitext(song)[0] for song in songs]
+    for reg in args.remove:
+        parsed_names = [re.sub(rf"{reg}", "", song).strip() for song in parsed_names]
 
     # Step 3 - FFMPEG to destination
     for i in range(len(songs)):
