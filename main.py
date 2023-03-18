@@ -7,6 +7,11 @@ import tempfile
 from yt_dlp import YoutubeDL
 from shutil import which, rmtree
 
+SUPPORTED_EXTENSION = [
+    "mp3",
+    "m4a"
+]
+
 
 # TODO: Possibly include the ffmpeg binary to prevent requirements
 def main():
@@ -26,19 +31,26 @@ def main():
     parser.add_argument("-y", "--youtube", action="store_true",
                         help="Download input from YouTube.")
     parser.add_argument("-r", "--remove", help="Remove string (supports regex)", nargs="*")
+    parser.add_argument("-e", "--extension", help="Specifies the preferred output audio format (mp3, m4a supported)",
+                        default="mp3", choices=SUPPORTED_EXTENSION)
     parser.add_argument("destination", help="Playlist destination folder")
 
     args = parser.parse_args()
 
     # Verify arguments
     if args.art and (not os.path.isfile(args.art) or not args.art.lower().endswith(
-            ('.png', '.jpg', '.jpeg', '.tiff', '.bmp'))):
+            ('.png', '.jpg', '.jpeg'))):
         print("Art file is not a valid image file")
         return
 
+    if not os.path.isdir(args.destination):
+        os.mkdir(args.destination)
+
+    extension = args.extension
+
     # Step 1 - Get songs
     if args.youtube:
-        song_location = download_playlist(args.input)
+        song_location = download_playlist(args.input, extension)
     else:
         song_location = args.input
 
@@ -64,7 +76,7 @@ def main():
         song_file = os.path.join(song_location, songs[i])
         name = parsed_names[i]
         title = args.name
-        out_file_name = f"{name} - {title} OST.mp3"
+        out_file_name = f"{name} - {title} OST." + extension
         destination_file = os.path.join(args.destination, out_file_name)
 
         # Start FFMPEG
@@ -92,12 +104,12 @@ def get_songs(location: str) -> list:
     songs = []
     for root, dirs, files in os.walk(location):
         for filename in files:
-            if os.path.splitext(filename)[1] == ".mp3":
+            if os.path.splitext(filename)[1][1:] in SUPPORTED_EXTENSION:
                 songs.append(filename)
     return songs
 
 
-def download_playlist(playlist: str) -> str:
+def download_playlist(playlist: str, extension: str) -> str:
     print("Downloading playlist:", playlist)
     temp_folder = tempfile.mkdtemp(prefix="upf-")
     output_template = os.path.join(temp_folder, "%(title)s.%(ext)s")
@@ -105,7 +117,7 @@ def download_playlist(playlist: str) -> str:
         'format': 'mp3/bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',
+            'preferredcodec': extension,
         }],
         'outtmpl': output_template,
         'logger': CleanLogger()
@@ -130,8 +142,7 @@ class CleanLogger:
             print(msg)
 
     def info(self, msg):
-        if msg.startswith("[download]"):
-            print(msg)
+        pass
 
     def warning(self, msg):
         pass
