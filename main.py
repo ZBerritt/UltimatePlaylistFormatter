@@ -24,7 +24,7 @@ def main():
     parser.add_argument("-n", "--name", required=True, help="The name of the album")
     parser.add_argument("-a", "--art", help="The path to the art to use")
     parser.add_argument("-y", "--youtube", action="store_true",
-                        help="Whether to download from youtube.")
+                        help="Download input from YouTube.")
     parser.add_argument("-r", "--remove", help="Remove string (supports regex)", nargs="*")
     parser.add_argument("destination", help="Playlist destination folder")
 
