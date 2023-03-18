@@ -8,7 +8,7 @@ UltimatePlaylistFormatter is a command line application for creating and formatt
 # Usage
 See the [Options](#Options) table to see all the flags
 
-Format: ultimateplaylistformatter -i path/to/songs -n "My Songs" output/path
+Format: `ultimateplaylistformatter -i path/to/songs -n "My Songs" output/path`
 
 For extra help, you may use the `ultimateplaylistformatter --help` command
 
