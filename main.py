@@ -34,7 +34,7 @@ def main():
     parser.add_argument("name", help="The name of the album")
     parser.add_argument("input", help="The input folder/youtube url")
     parser.add_argument("destination", help="Playlist destination folder")
-    parser.add_argument("-a", "--art", help="The path of the album cover to use")
+    parser.add_argument("-c", "--cover", help="The path of the album cover to use")
     parser.add_argument("-r", "--remove", help="Remove string (supports regex)", nargs="*")
     parser.add_argument("-e", "--extension", help="Specifies the preferred output audio format (mp3, m4a supported)",
                         default="mp3", choices=SUPPORTED_EXTENSIONS)
@@ -42,7 +42,7 @@ def main():
     args = parser.parse_args()
 
     # Verify arguments
-    if args.art and (not os.path.isfile(args.art) or os.path.splitext(args.art.lower())[1][1:] not in SUPPORTED_IMAGES):
+    if args.cover and (not os.path.isfile(args.cover) or os.path.splitext(args.cover.lower())[1][1:] not in SUPPORTED_IMAGES):
         print("Art file is not a valid image file (png or jpeg)")
         return
 
@@ -84,11 +84,11 @@ def main():
 
         # Start FFMPEG
         command = ["ffmpeg", "-y"]
-        if args.art is not None:
-            command += ["-i", args.art]
+        if args.cover is not None:
+            command += ["-i", args.cover]
         command += ["-i", source_file]
         command += ["-map", "0:0"]
-        if args.art is not None:
+        if args.cover is not None:
             command += ["-map", "1:0"]
         command += ["-codec", "copy"]
         command += ["-metadata", f"title={name}"]
