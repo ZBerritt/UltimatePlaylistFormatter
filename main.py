@@ -35,8 +35,6 @@ def main():
     parser.add_argument("input", help="The input folder/youtube url")
     parser.add_argument("destination", help="Playlist destination folder")
     parser.add_argument("-a", "--art", help="The path of the album cover to use")
-    parser.add_argument("-y", "--youtube", action="store_true",
-                        help="Download input from YouTube.")
     parser.add_argument("-r", "--remove", help="Remove string (supports regex)", nargs="*")
     parser.add_argument("-e", "--extension", help="Specifies the preferred output audio format (mp3, m4a supported)",
                         default="mp3", choices=SUPPORTED_EXTENSIONS)
@@ -51,19 +49,21 @@ def main():
     if not os.path.isdir(args.destination):
         os.mkdir(args.destination)
 
+    # Check if YouTube playlist
+    youtube_input = re.match(r'^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/playlist\?list=(.*)$', args.input)
+
     extension = args.extension
 
     # Step 1 - Get songs
-    if args.youtube:
+    if youtube_input:
         song_location = download_playlist(args.input, extension)
     else:
         song_location = args.input
 
     # Verify location
     if not os.path.isdir(song_location):
-        print("An error has occurred when downloading songs." if args.youtube else "Song directory could not be"
-                                                                                   "found.")
-        return clean_exit(song_location)
+        print("An error has occurred when retrieving the songs. Please verify your input URL/location.")
+        return clean_exit(None)
     songs = get_songs(song_location)
 
     if len(songs) == 0:
@@ -76,9 +76,8 @@ def main():
         parsed_names = [re.sub(rf"{reg}", "", song).strip() for song in parsed_names]
 
     # Step 3 - FFMPEG to destination
-    for i in range(len(songs)):
-        source_file = os.path.join(song_location, songs[i])
-        name = parsed_names[i]
+    for song, name in zip(songs, parsed_names):
+        source_file = os.path.join(song_location, song)
         title = args.name
         out_file_name = f"{name} - {title} OST.{extension}"
         destination_file = os.path.join(args.destination, out_file_name)
@@ -145,8 +144,17 @@ class CleanLogger:
         if msg.startswith("[download] Downloading item"):
             print(msg)
 
+    def info(self, msg):
+        pass
+
+    def warning(self, msg):
+        pass
+
     def error(self, msg):
-        print(msg)
+        print("ERROR: An error has occurred processing the provided YouTube playlist. Please make sure the URL is "
+              "valid.", file=sys.stderr)
+        print(msg, file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

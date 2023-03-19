@@ -15,7 +15,6 @@ For extra help, you may use the `ultimateplaylistformatter.exe --help` command
 ## Options
 | Flag                         | Description                                                      | Default |
 |------------------------------|------------------------------------------------------------------|---------|
-| --art (-a) [ART]             | The path of the album cover to use                               | None    | 
-| --youtube (-y)               | Download input from YouTube.                                     | False   |
+| --art (-a) [ART]             | The path of the album cover to use                               | None    |
 | --remove (-r) [REMOVE,...]   | Remove string (supports regex)                                   | None    |
 | --extension (-e) [EXTENSION] | Specifies the preferred output audio format (mp3, m4a supported) | mp3     |
