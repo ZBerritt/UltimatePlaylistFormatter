@@ -13,8 +13,9 @@ Format: `ultimateplaylistformatter.exe "My Songs" path/to/songs path/to/output`
 For extra help, you may use the `ultimateplaylistformatter.exe --help` command
 
 ## Options
-| Flag                         | Description                                                      | Default |
-|------------------------------|------------------------------------------------------------------|---------|
-| --cover (-c) [ART]           | The path of the album cover to use                               | None    |
-| --remove (-r) [REMOVE,...]   | Remove string (supports regex)                                   | None    |
-| --extension (-e) [EXTENSION] | Specifies the preferred output audio format (mp3, m4a supported) | mp3     |
+| Flag                         | Description                                                      | Default       |
+|------------------------------|------------------------------------------------------------------|---------------|
+| --cover (-c) [COVER]         | The path of the album cover to use                               | None          |
+| --artist (-a) [ARTIST]       | The artist of the album                                          | Same as album |
+| --remove (-r) [REMOVE,...]   | Remove string (supports regex)                                   | None          |
+| --extension (-e) [EXTENSION] | Specifies the preferred output audio format (mp3, m4a supported) | mp3           |

@@ -31,10 +31,11 @@ def main():
         prog="UltimatePlaylistFormatter",
         description="Fully functional youtube/mp3 playlist formatter (requires ffmpeg)"
     )
-    parser.add_argument("name", help="The name of the album")
+    parser.add_argument("album", help="The name of the album")
     parser.add_argument("input", help="The input folder/youtube url")
     parser.add_argument("destination", help="Playlist destination folder")
     parser.add_argument("-c", "--cover", help="The path of the album cover to use")
+    parser.add_argument("-a", "--artist", help="The name of the artist to use")
     parser.add_argument("-r", "--remove", help="Remove string (supports regex)", nargs="*")
     parser.add_argument("-e", "--extension", help="Specifies the preferred output audio format (mp3, m4a supported)",
                         default="mp3", choices=SUPPORTED_EXTENSIONS)
@@ -45,6 +46,9 @@ def main():
     if args.cover and (not os.path.isfile(args.cover) or os.path.splitext(args.cover.lower())[1][1:] not in SUPPORTED_IMAGES):
         print("Art file is not a valid image file (png or jpeg)")
         return
+
+    if not args.artist:
+        args.artist = args.album
 
     if not os.path.isdir(args.destination):
         os.mkdir(args.destination)
@@ -78,8 +82,11 @@ def main():
     # Step 3 - FFMPEG to destination
     for song, name in zip(songs, parsed_names):
         source_file = os.path.join(song_location, song)
-        title = args.name
-        out_file_name = f"{name} - {title} OST.{extension}"
+        album = args.album
+        artist = args.artist
+        out_file_name = f"{name} - {album}.{extension}" \
+            if artist == album \
+            else f"{name} - {artist} ({album}).{extension}"
         destination_file = os.path.join(args.destination, out_file_name)
 
         # Start FFMPEG
@@ -92,8 +99,8 @@ def main():
             command += ["-map", "1:0"]
         command += ["-codec", "copy"]
         command += ["-metadata", f"title={name}"]
-        command += ["-metadata", f"album={title}"]
-        command += ["-metadata", f"artist={title}"]
+        command += ["-metadata", f"album={album}"]
+        command += ["-metadata", f"artist={artist}"]
         command.append(destination_file)
         subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)  # Do not print to console
         print("Wrote:", out_file_name)
