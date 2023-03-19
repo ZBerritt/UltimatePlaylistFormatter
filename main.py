@@ -13,7 +13,7 @@ SUPPORTED_IMAGES = [
     "jpeg"
 ]
 
-SUPPORTED_EXTENSION = [
+SUPPORTED_EXTENSIONS = [
     "mp3",
     "m4a"
 ]
@@ -31,15 +31,15 @@ def main():
         prog="UltimatePlaylistFormatter",
         description="Fully functional youtube/mp3 playlist formatter (requires ffmpeg)"
     )
-    parser.add_argument("-i", "--input", required=True, help="The input folder/youtube url")
-    parser.add_argument("-n", "--name", required=True, help="The name of the album")
-    parser.add_argument("-a", "--art", help="The path to the art to use")
+    parser.add_argument("name", help="The name of the album")
+    parser.add_argument("input", help="The input folder/youtube url")
+    parser.add_argument("destination", help="Playlist destination folder")
+    parser.add_argument("-a", "--art", help="The path of the album cover to use")
     parser.add_argument("-y", "--youtube", action="store_true",
                         help="Download input from YouTube.")
     parser.add_argument("-r", "--remove", help="Remove string (supports regex)", nargs="*")
     parser.add_argument("-e", "--extension", help="Specifies the preferred output audio format (mp3, m4a supported)",
-                        default="mp3", choices=SUPPORTED_EXTENSION)
-    parser.add_argument("destination", help="Playlist destination folder")
+                        default="mp3", choices=SUPPORTED_EXTENSIONS)
 
     args = parser.parse_args()
 
@@ -108,7 +108,7 @@ def get_songs(location: str) -> list:
     songs = []
     for root, dirs, files in os.walk(location):
         for filename in files:
-            if os.path.splitext(filename)[1][1:] in SUPPORTED_EXTENSION:
+            if os.path.splitext(filename)[1][1:] in SUPPORTED_EXTENSIONS:
                 songs.append(filename)
     return songs
 

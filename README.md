@@ -8,16 +8,14 @@ UltimatePlaylistFormatter is a Windows command line application for creating and
 # Usage
 See the [Options](#Options) table to see all the flags
 
-Format: `ultimateplaylistformatter.exe -i path/to/songs -n "My Songs" output/path`
+Format: `ultimateplaylistformatter.exe "My Songs" path/to/songs path/to/output`
 
 For extra help, you may use the `ultimateplaylistformatter.exe --help` command
 
 ## Options
-| Flag                         | Description                                                      | Required | Default |
-|------------------------------|------------------------------------------------------------------|----------|---------|
-| --input (-i) [INPUT]         | The input folder/youtube url                                     | Yes      | N/A     |
-| --name (-n) [NAME]           | The name of the album/artist                                     | Yes      | N/A     |
-| --art (-a) [ART]             | The path to the art to use                                       | No       | N/A     | 
-| --youtube (-y)               | Download input from YouTube.                                     | No       | False   |
-| --remove (-r) [REMOVE,...]   | Remove string (supports regex)                                   | No       | N/A     |
-| --extension (-e) [EXTENSION] | Specifies the preferred output audio format (mp3, m4a supported) | No       | mp3     |
+| Flag                         | Description                                                      | Default |
+|------------------------------|------------------------------------------------------------------|---------|
+| --art (-a) [ART]             | The path of the album cover to use                               | None    | 
+| --youtube (-y)               | Download input from YouTube.                                     | False   |
+| --remove (-r) [REMOVE,...]   | Remove string (supports regex)                                   | None    |
+| --extension (-e) [EXTENSION] | Specifies the preferred output audio format (mp3, m4a supported) | mp3     |
