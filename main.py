@@ -23,7 +23,7 @@ SUPPORTED_EXTENSIONS = [
 def main():
     # Check ffmpeg install
     if which("ffmpeg") is None:
-        print("FFMPEG is not installed or is not on the PATH. (https://ffmpeg.org/download.html)")
+        print("FFMPEG is not installed or is not on the system PATH. (https://ffmpeg.org/download.html)")
         return
 
     # Get arguments
@@ -43,7 +43,8 @@ def main():
     args = parser.parse_args()
 
     # Verify arguments
-    if args.cover and (not os.path.isfile(args.cover) or os.path.splitext(args.cover.lower())[1][1:] not in SUPPORTED_IMAGES):
+    if args.cover and (not os.path.isfile(args.cover) or os.path.splitext(args.cover.lower())[1][1:] not in
+                       SUPPORTED_IMAGES):
         print("Art file is not a valid image file (png or jpeg)")
         return
 
@@ -54,7 +55,7 @@ def main():
         os.mkdir(args.destination)
 
     # Check if YouTube playlist
-    youtube_input = re.match(r'^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/playlist\?list=(.*)$', args.input)
+    youtube_input = re.match(r'^(https?://)?(www\.)?(youtube\.com|youtu\.?be)/playlist\?list=(.*)$', args.input)
 
     extension = args.extension
 
