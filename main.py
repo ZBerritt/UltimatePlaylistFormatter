@@ -39,6 +39,7 @@ def main():
     parser.add_argument("-r", "--remove", help="Remove string (supports regex)", nargs="*")
     parser.add_argument("-e", "--extension", help="Specifies the preferred output audio format (mp3, m4a supported)",
                         default="mp3", choices=SUPPORTED_EXTENSIONS)
+    parser.add_argument("-n", "--no-format", help="Skips formatting downloaded YouTube playlists.", action="store_true")
 
     args = parser.parse_args()
 
@@ -62,8 +63,14 @@ def main():
     # Step 1 - Get songs
     if youtube_input:
         song_location = download_playlist(args.input, extension)
+
     else:
         song_location = args.input
+
+    if args.no_format:
+        print("Formatting Skipped...")
+        subprocess.Popen(rf'explorer "{song_location}"')
+        return
 
     # Verify location
     if not os.path.isdir(song_location):
@@ -140,7 +147,7 @@ def download_playlist(playlist: str, extension: str) -> str:
     return temp_folder
 
 
-def clean_exit(temp_folder: str):
+def clean_exit(temp_folder: str | None):
     if temp_folder is not None:
         rmtree(temp_folder)
     sys.exit(0)
