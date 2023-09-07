@@ -21,49 +21,14 @@ SUPPORTED_EXTENSIONS = [
 
 # TODO: Possibly include the ffmpeg binary to prevent requirements
 def main():
-    # Check ffmpeg install
-    if which("ffmpeg") is None:
-        print("FFMPEG is not installed or is not on the system PATH. (https://ffmpeg.org/download.html)")
-        return
-
-    # Get arguments
-    parser = argparse.ArgumentParser(
-        prog="UltimatePlaylistFormatter",
-        description="Fully functional youtube/mp3 playlist formatter (requires ffmpeg)"
-    )
-    parser.add_argument("album", help="The name of the album")
-    parser.add_argument("input", help="The input folder/youtube url")
-    parser.add_argument("destination", help="Playlist destination folder")
-    parser.add_argument("-c", "--cover", help="The path of the album cover to use")
-    parser.add_argument("-a", "--artist", help="The name of the artist to use")
-    parser.add_argument("-r", "--remove", help="Remove string (supports regex)", nargs="*")
-    parser.add_argument("-e", "--extension", help="Specifies the preferred output audio format (mp3, m4a supported)",
-                        default="mp3", choices=SUPPORTED_EXTENSIONS)
-    parser.add_argument("-n", "--no-format", help="Skips formatting downloaded YouTube playlists.", action="store_true")
-
-    args = parser.parse_args()
-
-    # Verify arguments
-    if args.cover and (not os.path.isfile(args.cover) or os.path.splitext(args.cover.lower())[1][1:] not in
-                       SUPPORTED_IMAGES):
-        print("Art file is not a valid image file (png or jpeg)")
-        return
-
-    if not args.artist:
-        args.artist = args.album
-
-    if not os.path.isdir(args.destination):
-        os.mkdir(args.destination)
-
-    # Check if YouTube playlist
-    youtube_input = re.match(r'^(https?://)?(www\.)?(youtube\.com|youtu\.?be)/playlist\?list=(.*)$', args.input)
-
-    extension = args.extension
-
     # Step 1 - Get songs
-    if youtube_input:
-        song_location = download_playlist(args.input, extension)
+    check_requirements()
+    args = parse_arguments()
+    verify_arguments(args)
 
+    is_youtube_input = re.match(r'^(https?://)?(www\.)?(youtube\.com|youtu\.?be)/playlist\?list=(.*)$', args.input)
+    if is_youtube_input:
+        song_location = download_playlist(args.input, args.extension)
     else:
         song_location = args.input
 
@@ -72,17 +37,14 @@ def main():
         subprocess.Popen(rf'explorer "{song_location}"')
         return
 
-    # Verify location
-    if not os.path.isdir(song_location):
-        print("An error has occurred when retrieving the songs. Please verify your input URL/location.")
-        return clean_exit(None)
+    check_song_location(song_location)
     songs = get_songs(song_location)
 
     if len(songs) == 0:
         print("No songs were found!")
         clean_exit(song_location)
 
-    # Step 2 - Parse song names'
+    # Step 2 - Parse song names
     parsed_names = [os.path.splitext(song)[0] for song in songs]
     for reg in args.remove:
         parsed_names = [re.sub(rf"{reg}", "", song).strip() for song in parsed_names]
@@ -92,9 +54,9 @@ def main():
         source_file = os.path.join(song_location, song)
         album = args.album
         artist = args.artist
-        out_file_name = f"{name} - {album}.{extension}" \
+        out_file_name = f"{name} - {album}.{args.extension}" \
             if artist == album \
-            else f"{name} - {artist} ({album}).{extension}"
+            else f"{name} - {artist} ({album}).{args.extension}"
         destination_file = os.path.join(args.destination, out_file_name)
 
         # Start FFMPEG
@@ -117,6 +79,44 @@ def main():
     subprocess.Popen(rf'explorer "{args.destination}"')  # Open folder when done
     clean_exit(song_location)
 
+def check_requirements():
+    if which("ffmpeg") is None:
+        print("FFMPEG is not installed or is not on the system PATH. (https://ffmpeg.org/download.html)")
+        exit(1)
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        prog="UltimatePlaylistFormatter",
+        description="Fully functional youtube/mp3 playlist formatter (requires ffmpeg)"
+    )
+    parser.add_argument("album", help="The name of the album")
+    parser.add_argument("input", help="The input folder/youtube url")
+    parser.add_argument("destination", help="Playlist destination folder")
+    parser.add_argument("-c", "--cover", help="The path of the album cover to use")
+    parser.add_argument("-a", "--artist", help="The name of the artist to use")
+    parser.add_argument("-r", "--remove", help="Remove string (supports regex)", nargs="*")
+    parser.add_argument("-e", "--extension", help="Specifies the preferred output audio format (mp3, m4a supported)",
+                        default="mp3", choices=SUPPORTED_EXTENSIONS)
+    parser.add_argument("-n", "--no-format", help="Skips formatting downloaded YouTube playlists.", action="store_true")
+
+    return parser.parse_args()
+
+def verify_arguments(args):
+    if args.cover and (not os.path.isfile(args.cover) or os.path.splitext(args.cover.lower())[1][1:] not in
+                       SUPPORTED_IMAGES):
+        print("Art file is not a valid image file (png or jpeg)")
+        exit(1)
+
+    if not args.artist:
+        args.artist = args.album
+
+    if not os.path.isdir(args.destination):
+        os.mkdir(args.destination)
+
+def check_song_location(song_location):
+    if not os.path.isdir(song_location):
+        print("An error has occurred when retrieving the songs. Please verify your input URL/location.")
+        return clean_exit(None)
 
 def get_songs(location: str) -> list:
     songs = []
